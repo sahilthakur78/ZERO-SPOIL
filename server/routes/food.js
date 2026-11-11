@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import * as c from '../controllers/foodController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { listingSchema, listingUpdateSchema, deliverSchema } from '../validators/schemas.js';
+
+const r = Router();
+r.use(protect);
+r.get('/', authorize('ngo', 'admin'), c.browseListings);
+r.post('/', authorize('donor'), validate(listingSchema), c.createListing);
+r.get('/mine', authorize('donor', 'ngo'), c.myListings);
+r.get('/stats', authorize('donor', 'ngo'), c.myStats);
+r.get('/:id', c.getListing);
+r.patch('/:id', authorize('donor'), validate(listingUpdateSchema), c.updateListing);
+r.post('/:id/cancel', authorize('donor'), c.cancelListing);
+r.post('/:id/claim', authorize('ngo'), c.claimListing);
+r.post('/:id/release', authorize('ngo'), c.releaseListing);
+r.post('/:id/pickup', authorize('ngo'), c.markPickedUp);
+r.post('/:id/deliver', authorize('ngo'), validate(deliverSchema), c.markDelivered);
+export default r;
